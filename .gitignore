@@ -11,4 +11,4 @@
 # Python Tools for Visual Studio (PTVS)
 *.pyc
 Data/ntu_uniformed.pickle
-Data/ntu_uniformed_with_noise.pickle
+Data/ntu_uniformed_random_noise.pickle

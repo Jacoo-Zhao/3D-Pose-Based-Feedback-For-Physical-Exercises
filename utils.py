@@ -7,7 +7,7 @@ import random
 import sys
 sys.path.append('..')
 
-from PoseCorrection.softdtw import SoftDTW
+from softdtw import SoftDTW
 
 
 import matplotlib.pyplot as plt
@@ -96,7 +96,6 @@ def dtw_loss(originals, deltas, targets, criterion, attentions=None, is_cuda=Fal
         # loss += crit 
 
         if test:
-            # out.cpu()
             preds.append(out[0].detach().cpu().numpy().T)
 
     if test:

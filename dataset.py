@@ -6,6 +6,7 @@ import numpy as np
 from torch.utils.data import Dataset
 #import torch_dct as dct
 import sys
+sys.path.append('/cvlabdata2/home/ziyi/3D-Motion-Correction-22SPring/Motion-Correction-master/PoseCorrection')
 from utils import dct_2d
 import pdb
 from PoseCorrection.softdtw import SoftDTW
@@ -16,11 +17,8 @@ class HV3D(Dataset):
     def __init__(self, data_path, dct_n=25, split=0, sets=None, is_cuda=False, add_data=None):
         if sets is None:
             sets = [[0, 1], [2], [3]]
-
         self.dct_n = dct_n
         correct, other = load_data(data_path, sets[split], add_data=add_data)
-        # correct_test, other_test = load_data(data_path, sets[1], add_data=add_data)
-
         pairs = dtw_pairs(correct, other, is_cuda=is_cuda)
 
         self.targets_label = [i[1] for i in pairs]
@@ -175,10 +173,10 @@ def load_data(data_path, subs, add_data=None):
 
 def dtw_pairs(correct, incorrect, is_cuda=False):
     pairs = []
-    # pdb.set_trace()
     for act, sub in set([(k[0], k[1]) for k in incorrect.keys()]):
-        # correct_sub = {k: v for k, v in correct.items() if k[0] == act and k[1] == sub}
-        correct_sub = {k: v for k, v in correct.items() if k[0] == act}
+        ''' fetch from all sets or only training set (dataset_fetch baseline used to compare dtw_loss)'''
+        correct_sub = {k: v for k, v in correct.items() if k[0] == act and k[1] == sub} # all dastasets
+        # correct_sub = {k: v for k, v in correct.items() if k[0] == act and k[1] != sub}  # training sets
         incorrect_sub = {k: v for k, v in incorrect.items() if k[0] == act and k[1] == sub}
         dtw_sub = {k: {} for k in incorrect_sub.keys()}
         for i, pair in enumerate(itertools.product(incorrect_sub, correct_sub)):
