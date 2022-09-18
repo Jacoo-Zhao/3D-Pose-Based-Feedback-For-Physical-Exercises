@@ -1,3 +1,4 @@
+import utils
 import torch.nn as nn
 import torch
 from torch.nn.parameter import Parameter
@@ -86,9 +87,8 @@ class GC_Block(nn.Module):
                + str(self.in_features) + ' -> ' \
                + str(self.out_features) + ')'
 
-
-class GCN_corr(nn.Module):
-
+class GCN_corr_ori(nn.Module):
+    # Separated Corrector
     def __init__(self, input_feature=25, hidden_feature=128, p_dropout=0.5, num_stage=2, node_n=57):
         """
         :param input_feature: num of input feature
@@ -97,7 +97,7 @@ class GCN_corr(nn.Module):
         :param num_stage: number of residual blocks
         :param node_n: number of nodes in graph
         """
-        super(GCN_corr, self).__init__()
+        super(GCN_corr_ori, self).__init__()
         self.num_stage = num_stage
 
         self.gcin = GraphConvolution(input_feature, hidden_feature, node_n=node_n)
@@ -116,13 +116,7 @@ class GCN_corr(nn.Module):
         self.act_f = nn.ReLU()
         self.act_fatt = nn.Sigmoid()
 
-        self.avgpool = torch.nn.AvgPool1d(kernel_size=2, stride=2)
-        self.conv2d = nn.Conv2d(3, 3, kernel_size=(1, 3), padding=(0, 1), bias=False)
-        self.gcont_v2 = GraphConvolution(int(hidden_feature/2), input_feature, node_n=node_n)
-        self.maxpool = nn.AdaptiveMaxPool2d((57, 25))
-
     def forward(self, x):
-
         y = self.gcin(x)
         if len(y.shape) == 3:
             b, n, f = y.shape
@@ -135,23 +129,15 @@ class GCN_corr(nn.Module):
         y = self.do(y)
 
         for i in range(self.num_stage):
-            y_stop = self.gcbs[i](y)
+            y = self.gcbs[i](y)
 
-        y = self.avgpool(y_stop)
-        y = y.view(y.shape[0], 3, 19, y.shape[2]) 
-        y = self.conv2d(y)  # --> batch,3,25,features/2
-        y = y.view(y.shape[0], 57, y.shape[3]) 
-        out = self.gcont_v2(y)
-        
+        out = self.gcout(y)
 
-        # out = self.gcout(y)
-
-        att = self.gcatt(y_stop)
+        att = self.gcatt(y)
         att = self.act_fatt(att)
 
         return out, att
-
-
+        
 class GCN_class(nn.Module):
     # Separated Classifier (Simple) 
     def __init__(self, input_feature=25, hidden_feature=32, p_dropout=0.5, node_n=57, classes=12):
@@ -283,7 +269,7 @@ class GCN_class_22Spring(nn.Module):
         return y
 
 class GCN_corr_class_v1_22Spring(nn.Module):
-
+    # combiend_wo_feedback
     def __init__(self, input_feature=25, hidden_feature=128, p_dropout=0.5, \
                  num_stage=2, node_n=57, classes=12):
         """
@@ -366,5 +352,120 @@ class GCN_corr_class_v1_22Spring(nn.Module):
         y_class = y_class.view(-1, node_n * input_feature)
         y_class = self.lin(y_class)
         y_class = self.act_flin(y_class)
+
+        return out, att, y_class
+
+
+class GCN_corr_class_v4_22Spring(nn.Module):
+    # ours / combined_wo_smoothness
+    def __init__(self, input_feature=25, hidden_feature=128, p_dropout=0.5, \
+                 num_stage=2, node_n=57, classes=12):
+        """
+            :param input_feature: num of input feature
+            :param hidden_feature: num of hidden feature
+            :param p_dropout: drop out prob.
+            :param num_stage: number of residual blocks
+            :param node_n: number of nodes in graph
+        """
+        super(GCN_corr_class_v4_22Spring, self).__init__()
+        self.classes=classes
+        self.num_stage = num_stage
+        self.gcin = GraphConvolution(input_feature, hidden_feature, node_n=node_n)
+
+        self.gcin2 = GraphConvolution(input_feature, hidden_feature,
+                                      node_n=node_n)  # for the second part of classifier
+        self.bn1 = nn.BatchNorm1d(node_n * hidden_feature)  # The first bn that shared
+
+        
+        self.gcbs = GC_Block(hidden_feature, p_dropout=p_dropout, node_n=node_n)
+        self.gcbs1 = GC_Block(hidden_feature+1, p_dropout=p_dropout, node_n=node_n)
+
+        self.gcout_corr = GraphConvolution(hidden_feature+1, input_feature, node_n=node_n)
+        self.gcatt = GraphConvolution(hidden_feature+1, 1, node_n=node_n)  # Attention
+
+        self.gcout_class = GraphConvolution(hidden_feature, input_feature, node_n=node_n)
+        self.bn2 = nn.BatchNorm1d(node_n * input_feature)  # The second bn that exclusively for classifier
+        self.lin = nn.Linear(node_n * input_feature, classes)
+        self.linearLayer = nn.Linear(12, 57)
+
+
+        self.do = nn.Dropout(p_dropout)
+        self.act_f = nn.ReLU()
+        self.act_fatt = nn.Sigmoid()
+        self.act_flin = nn.LogSoftmax(dim=1)
+
+        # model reconstruct
+        # for classifier
+        self.avgpool = torch.nn.AvgPool1d(kernel_size=2, stride=2)
+        self.conv2d = nn.Conv2d(3, 3, kernel_size=(1, 3), padding=(0, 1), bias=False)
+        self.gcont_class_v2 = GraphConvolution(int(hidden_feature/2), input_feature, node_n=node_n)
+        self.maxpool = nn.AdaptiveMaxPool2d((57, 25))
+        # for corrector
+        # self.gcout_corr_22S = GraphConvolution(int(hidden_feature/2), input_feature, node_n=node_n)
+
+
+    def forward(self, x, labels, Use_label, random_one_hot=False):
+        # import pdb; pdb.set_trace()
+
+        y = self.gcin(x)
+        if len(y.shape) == 3:
+            b, n, f = y.shape
+        else:
+            b = 1
+            n, f = y.shape
+
+        y = self.bn1(y.view(b, -1)).view(b, n, f)
+        y = self.act_f(y)
+        y_shared = self.do(y) #  shape: (batch_size, nodes, hidden_features)
+
+        # For the class part
+        y_class = self.avgpool(y_shared) # --> batch*mode_n*features/2
+        y_class = y_class.view(y_class.shape[0], 3, 19, y_class.shape[2]) 
+        y_class = self.conv2d(y_class)  # --> batch,3,25,features/2
+        y_class = y_class.view(y_class.shape[0], 57, y_class.shape[3]) 
+        y_class = self.gcont_class_v2(y_class)
+        if b > 1:
+            y_class = self.bn2(y_class.view(b, -1)).view(y_class.shape)
+        y_class = self.act_f(y_class)
+        y_class = self.do(y_class)
+        # y_class = self.maxpool(y_class)
+        node_n = 57
+        input_feature =25
+        y_class = y_class.view(-1, node_n * input_feature)
+
+        y_class = self.lin(y_class)
+        y_class = self.act_flin(y_class)
+
+        # For the corr part
+        # import pdb; pdb.set_trace()
+        y_corr = self.gcbs(y_shared)  # --> batch,node,hiden_features
+        ''''Apply Feedback: Curriculum Learning strategy '''
+        batch_size = x.shape[0]
+        one_hot_labels = torch.zeros(batch_size, self.classes).cuda()  
+        if Use_label == True:
+            for ind, elem in enumerate(labels):
+                one_hot_labels[ind, elem] = 1
+        else:
+            # import pdb; pdb.set_trace()
+            _, predicted = torch.max(y_class.data, 1)
+            if random_one_hot == True:
+                one_hot_labels= utils.generate_random_one_hot(predicted, batch_size,self.classes).float().cuda()
+            else:
+                for ind, elem in enumerate(predicted):
+                    one_hot_labels[ind, elem] = 1 
+
+        newFeature = self.linearLayer(one_hot_labels)
+        newFeature_3d = newFeature.unsqueeze(2)
+
+        ''' Concatenate groundtruth with the orginal inputs'''
+        yWithLabels = torch.cat([newFeature_3d, y_corr], dim=2) #shape: (batch,node,hiddenFeatures+1) 
+
+        y_corr = self.gcbs1(yWithLabels)
+        
+        
+        """continue with previous designed model"""
+        out = self.gcout_corr(y_corr)
+        att = self.gcatt(y_corr)
+        att = self.act_fatt(att)  # These are for attention
 
         return out, att, y_class

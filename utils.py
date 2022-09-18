@@ -1,11 +1,8 @@
 import numpy as np
 import torch
 import torch.nn as nn
-import pdb, pickle
 import random
 
-import sys
-sys.path.append('..')
 
 from softdtw import SoftDTW
 
@@ -32,6 +29,26 @@ class AccumLoss(object):
         self.count += n
         self.avg = self.sum / self.count
 
+def generate_random_one_hot(gt_label, batch_size=32, num_class=12):
+    """
+    gt_label: ground truth label  type=torch.tensor 
+    batch_size: batch size   type=int
+    num_class: number of classes  type=int
+    """
+    # generate a random label
+    random_label = torch.tensor([random.randint(0,num_class-1)])
+    # check if random label is the same as the gt label
+    while random_label.item() == gt_label[0].item() :  
+             random_label = torch.tensor([random.randint(0,num_class-1)])
+
+    random_one_hot = torch.nn.functional.one_hot(random_label, num_classes=num_class)
+    for i in range(batch_size-1):
+        random_label = torch.tensor([random.randint(0,num_class-1)])
+        while random_label.item() == gt_label[i+1].item() :  
+            random_label = torch.tensor([random.randint(0,num_class-1)])  
+        label2one_hot = torch.nn.functional.one_hot(random_label, num_classes=num_class)
+        random_one_hot=torch.cat((label2one_hot,random_one_hot),0)
+    return random_one_hot
 
 def lr_decay(optimizer, lr_now, gamma):
     lr = lr_now * gamma
@@ -92,8 +109,8 @@ def dtw_loss(originals, deltas, targets, criterion, attentions=None, is_cuda=Fal
 
         dtw_loss_corr.append(crit.item())
         dtw_loss_org.append(crit_org.item())
-        loss += crit + 1e-3 * smoothness_loss
-        # loss += crit 
+        loss += crit + 1e-3 * smoothness_loss      # dtw_loss + smoothness
+        # loss += crit  # without smoothness
 
         if test:
             preds.append(out[0].detach().cpu().numpy().T)
