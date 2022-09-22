@@ -6,7 +6,7 @@ import numpy as np
 from torch.utils.data import Dataset
 #import torch_dct as dct
 import sys
-sys.path.append('/cvlabdata2/home/ziyi/3D-Motion-Correction-22SPring/Motion-Correction-master/PoseCorrection')
+sys.path.append('3D-Motion-Correction-22SPring/Motion-Correction-master/PoseCorrection')
 from utils import dct_2d
 import pdb
 from PoseCorrection.softdtw import SoftDTW
