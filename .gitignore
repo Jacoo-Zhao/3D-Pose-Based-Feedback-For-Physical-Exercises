@@ -1,13 +1,8 @@
-
 # dataset
-
-# running log
-
-
-# visualizations
+data/NTU/*.pickle
 
 # Dependency directories
 
 # Python Tools for Visual Studio (PTVS)
 *.pyc
-Data/NTU/*.pickle
+

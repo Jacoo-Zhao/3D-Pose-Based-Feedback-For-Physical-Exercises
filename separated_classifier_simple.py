@@ -11,7 +11,6 @@ from opt import Options
 from dataset import HV3D
 
 from utils import lr_decay, train_class, test_class 
-# from utils import *
 from torch.utils.tensorboard import SummaryWriter
 torch.cuda.set_device(2)
 print('GPU Index: {}'.format(torch.cuda.current_device()))

@@ -9,10 +9,10 @@ import torch
 from dataset import HV3D 
 from models import GCN_class_22Spring
 from opt import Options, setup_folder, save_opt
+
 from utils import lr_decay, train_class, test_class 
 
 from torch.utils.tensorboard import SummaryWriter
-
 torch.cuda.set_device(2)
 print('GPU Index: {}'.format(torch.cuda.current_device()))
 
