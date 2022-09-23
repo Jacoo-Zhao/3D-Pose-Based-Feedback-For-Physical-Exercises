@@ -22,7 +22,20 @@ Examples of acquired images for each action, subject and camera and 3D ground tr
   <img src="images/Dataset2.png" width="49%" />
 </p>
 
-- You can access all the data used  [coming soon!](https://github.com/Jacoo-Zhao/3D-Pose-Based-Feedback-For-Physical-Exercises). 
+You can access all the data used  [coming soon!](https://github.com/Jacoo-Zhao/3D-Pose-Based-Feedback-For-Physical-Exercises). 
+Description of the data:
+
+1. **data_3D.pickle** is the data source used in this paper. It contains the labels and 3D coordinates of all action sequences, while the coordinates have a size of (29789, 3, 25) where 29789 is the number of extracted frames for all action sequences, 3 is the x,y,z coordinates and 25 is the 25 skeletal nodes.
+
+2. **data.pickle** basically contains all the raw  data, consisting of the camera parameters and the 2D and 3D coordinates of each skeleton node for each frame. However, due to the large size of the frames extracted from the video (182GB*4), it’s  hard to provide these image frames. If you would like to obtain images, please see items 3 and 4.
+
+3. ** video.mp4** is the original four videos obtained by the four cameras, if you want to get the image frames, please refer  to  video_labelling.csv to intercept the video, we recommend using [ffmpeg](https://ffmpeg.org/) to extract the video frames one by one.
+
+4. **video_labelling.csv** is used to provide labels to the original video, they contain manually labelled start and end frames belonging to the same subject and action label.
+
+- If you wish to reproduce the results of this thesis, please use **data.pickle**.
+
+- For processing and development relative to the raw data, please refer to **video.mp4** and **video_labelling.csv**.
 
 ### Dependencies
 -   Cuda==10.1.168
