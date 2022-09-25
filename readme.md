@@ -1,5 +1,6 @@
 # 3D-Pose-Based-Feedback-For-Physical-Exercises
 
+🔗 [Website](https://senakicir.github.io/projects/exercise_feedback) &nbsp;&nbsp; ▶︎  [Video](https://www.youtube.com/watch?v=W3kyyeHe0SI&feature=youtu.be)
 ### Introduction
 Unsupervised self-rehabilitation exercises and physical training can cause serious injuries if performed incorrectly. \ms{We introduce a learning-based framework that identifies the mistakes made by a user and proposes corrective measures for easier and safer individual training. Our framework does not rely on hard-coded, heuristic rules. Instead, it learns them from data, which facilitates its adaptation to specific user needs. To this end, we use a Graph Convolutional Network (GCN) architecture acting on the user's pose sequence to model the relationship between the the body joints trajectories. To evaluate our approach, we introduce a dataset with 3 different physical exercises. Our approach yields 90.9\% mistake identification accuracy and successfully corrects 94.2\% of the mistakes.
 
@@ -60,11 +61,11 @@ Install the requirements using `virtualenv` or `conda`:
     # conda 
     source scripts/install_conda.sh
 
- Training & Testing
+ #### Training & Testing
 
 *Coming soon!*
 
-### Reference
+### Citing
 This repository holds the code for the following paper:
 
 [3D-Pose-Based-Feedback-For-Physical-Exercises](https://arxiv.org/abs/2208.03257). ACCV, 2022.

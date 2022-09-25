@@ -7,7 +7,7 @@ import torch
 import numpy as np
 
 from dataset import HV3D
-from models import GCN_corr_ori
+from models import GCN_corr
 from opt import Options, setup_folder, save_opt
 from evaluation import *
 
@@ -49,7 +49,7 @@ def main(opt):
     train_loader = DataLoader(dataset=data_train, batch_size=opt.batch, shuffle=True, drop_last=True)
     test_loader = DataLoader(dataset=data_test, batch_size=len(data_test))
 
-    model = GCN_corr_ori()
+    model = GCN_corr()
     if is_cuda:
         model.cuda()
 
@@ -74,7 +74,7 @@ def main(opt):
     torch.save(model.state_dict(), opt.model_dir)
 
 
-    model = GCN_corr_ori()
+    model = GCN_corr()
     model.load_state_dict(torch.load(opt.model_dir))
 
     if is_cuda:

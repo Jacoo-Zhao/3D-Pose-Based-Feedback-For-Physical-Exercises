@@ -2,19 +2,12 @@ import numpy as np
 import torch
 import torch.nn as nn
 import random
-
-
 from softdtw import SoftDTW
-
-
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 from matplotlib import cm, colors
 import matplotlib.colors as mcolors
 from matplotlib.animation import FuncAnimation
-
-from PIL import Image
-import imageio
 
 class AccumLoss(object):
     def __init__(self):
@@ -453,7 +446,7 @@ def train_class(train_loader, model, optimizer, is_cuda=False, level=0):
         else:
             inputs = inputs.float()
 
-        if train_loader.dataset.name == 'HV3D':
+        if train_loader.dataset.name == 'EC3D':
             labels = get_labels([train_loader.dataset.inputs_label[int(i)] for i in batch_id], level=level).cuda()
         elif train_loader.dataset.name == 'NTU60':
             labels = torch.from_numpy(np.array([train_loader.dataset.labels[int(i)] for i in batch_id])).long().cuda()
@@ -494,7 +487,7 @@ def evaluate_class(val_loader, model, is_cuda=False, level=0):
         else:
             inputs = inputs.float()
         
-        if val_loader.dataset.name == 'HV3D':
+        if val_loader.dataset.name == 'EC3D':
             labels = get_labels([val_loader.dataset.inputs_label[int(i)] for i in batch_id], level=level).cuda()
         elif val_loader.dataset.name == 'NTU60':
             labels = torch.from_numpy(np.array([val_loader.dataset.labels[int(i)] for i in batch_id])).long().cuda()
@@ -531,7 +524,7 @@ def test_class(test_loader, model, is_cuda=False, level=0):
             inputs = inputs.float().cuda()
         else:
             inputs = inputs.float()
-        if test_loader.dataset.name == 'HV3D':
+        if test_loader.dataset.name == 'EC3D':
             # import pdb; pdb.set_trace()
             labels = get_labels([test_loader.dataset.inputs_label[int(i)] for i in batch_id], level=level).cuda()
         elif test_loader.dataset.name == 'NTU60':

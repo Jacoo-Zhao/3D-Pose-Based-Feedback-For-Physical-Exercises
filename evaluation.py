@@ -10,10 +10,11 @@ print('GPU Index: {}'.format(torch.cuda.current_device()))
 
 
 from dataset import HV3D
-from models import GCN_corr_ori, GCN_class, GCN_class_22Spring
+# from models import GCN_corr, GCN_class, GCN_class_22Spring
+from models import *
 from opt import Options
 from utils import display_poses, get_labels, test_class_v4, idct_2d, test_corr_v4, dct_2d
-
+# from utils import *
 
 def get_full_label(raw_labels):
     map_label = {1: 'Correct', 2: 'Feets too wide', 3: 'Knees inward', 4: 'Not low enough', 5: 'Front bended',
@@ -48,7 +49,7 @@ def main_eval(time, savepath, model_combined, options, separated=False, model_co
     if separated:
         """For separated model"""
         # Create models
-        model_corr = GCN_corr_ori()
+        model_corr = GCN_corr()
         model_class = GCN_corr_class_v4_22Spring(hidden_feature=opt.hidden, p_dropout=opt.dropout, classes=12).cuda()
         # Load parameters
         model_corr.load_state_dict(torch.load(model_corr_path))

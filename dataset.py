@@ -9,10 +9,10 @@ import sys
 sys.path.append('3D-Motion-Correction-22SPring/Motion-Correction-master/PoseCorrection')
 from utils import dct_2d
 import pdb
-from PoseCorrection.softdtw import SoftDTW
+from softdtw import SoftDTW
 
 
-class HV3D(Dataset):
+class EC3D(Dataset):
 
     def __init__(self, data_path, dct_n=25, split=0, sets=None, is_cuda=False, add_data=None):
         if sets is None:
@@ -33,10 +33,10 @@ class HV3D(Dataset):
 
         self.node_n = np.shape(self.inputs_raw[0])[0]
         self.batch_ids = list(range(len(self.inputs_raw)))
-        self.name = "HV3D"
-        pdb.set_trace()
-        with open('Data/DTW_Method.pickle', 'wb') as f:
-            pickle.dump({'targets':self.targets,'tar_label':self.targets_label,'inputs':self.inputs,'inputs_raw':self.inputs_raw, 'inputs_label': self.inputs_label}, f)
+        self.name = "EC3D"
+        # pdb.set_trace()
+        # with open('data/DTW_Method.pickle', 'wb') as f:
+        #     pickle.dump({'targets':self.targets,'tar_label':self.targets_label,'inputs':self.inputs,'inputs_raw':self.inputs_raw, 'inputs_label': self.inputs_label}, f)
 
 
     def __len__(self):

@@ -14,28 +14,24 @@ class Options:
         self.parser.add_argument('--datetime', type=str, default="", help='datatime now')
         self.parser.add_argument('--ckpt', type=str, default='Combined_v1', help='path to checkpoint', required=True)
         self.parser.add_argument('--note', type=str, default="", help='any other notes')
-        self.parser.add_argument('--model_dir', type=str, default='', help='path to save model.pt')
-        self.parser.add_argument('--result_pickle_dir', type=str, default='', help='path to save result.pickle')
+        self.parser.add_argument('--result_CMT_dir', type=str, default='', help='path to save classification results')
+        self.parser.add_argument('--result_EMT_dir', type=str, default='', help='path to save evaluation results')
         self.parser.add_argument('--model', type=str, default='Combined_v2', help='model choose')
 
         self.parser.add_argument("--combined", "-c", default=True, help='Choose the combined model')
-        self.parser.add_argument('--NTU_data_pth', type=str, default='/cvlabdata2/home/ziyi/3D-Motion-Correction-22SPring/Motion-Correction-master/PoseCorrection/Data-22Spring/ntu/3D_PC_output/ntu_uniformed.pickle', help='pth to NTU data')
-
-        self.parser.add_argument('--vibe_dir', type=str, default='../data_3D_VIBE.pickle', help='path to dataset')
-        self.parser.add_argument('--gt_dir', type=str, default='Data/data_3D.pickle', help='path to dataset')
-        self.parser.add_argument('--corr_model_dir', type=str, default='Results-22Spring',
-                                 help='path to saved file')
-        self.parser.add_argument('--class_model_dir', type=str, default='Results1/model_class26-1.pt',
-                                 help='path to saved file')
-        self.parser.add_argument('--corr_class_model_dir', '-ccmd', type=str, default='Results/model_corr_class.pt',
+        self.parser.add_argument('--raw_data_dir', type=str, default='data/EC3D/data_3D.pickle', help='path to source data of EC3D')
+        self.parser.add_argument('--NTU_data_path', type=str, default='data/NTU/tu_uniformed.pickle', help='path to NTU data')
+        self.parser.add_argument('--EC3D_data_path', type=str, default='data/EC3D/tmp_wo_val.pickle', help='path to dataset')
+        
+        self.parser.add_argument('--model_dir', '-ccmd', type=str, default='Running_logs/model.pt',
                                  help='path to saved file')
        
 
         # ===============================================================
         #                     Model & Running options
-        # ===============================================================
+        #
         self.parser.add_argument('--dct_n', type=int, default=25, help='Number of DCT coefficients !invalid')
-        self.parser.add_argument('--use_vel', type=int, default=0, help='Whether to use vel.')
+        self.parser.add_argument('--use_vel', type=int, default=0, help='Whether to use velocity.')
         self.parser.add_argument('--batch', type=int, default=32, help='Batch size')
         self.parser.add_argument('--hidden', type=int, default=256, help='Number of hidden features')
         self.parser.add_argument('--dropout', type=float, default=0.5, help='Dropout probability, 1 for none')
@@ -59,19 +55,19 @@ class Options:
         self.opt = self.parser.parse_args()
         self.opt.datetime = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
         # do some pre-check
-        ckpt = os.path.join('Results', self.opt.ckpt)
+        ckpt = os.path.join('Running_logs', self.opt.ckpt)
         if not os.path.isdir(ckpt):
             os.makedirs(ckpt)
-        self.opt.ckpt = ckpt  # i.e. Results-22Spring/ckpt
+        self.opt.ckpt = ckpt  # i.e. Running_logs/ckpt
         self._print()
         return self.opt
 
 def setup_folder(opt):
     """
         set dir: tensorboard, model, result 
-        opt.ckpt_tensorbaord = Results-22Spring/opt.ckpt/tensorboard/date_time 
-        opt.model_dir = Results-22Spring/opt.ckpt/models/date_time 
-        opt.result_pickle_dir = Results-22Spring/opt.ckpt/result_pickle/date_time 
+        opt.ckpt_tensorbaord = Running_logs/opt.ckpt/tensorboard/date_time 
+        opt.model_dir = Running_logs/opt.ckpt/models/date_time 
+        opt.result_pickle_dir = Running_logs/opt.ckpt/result/date_time 
     """
 
     date_time= opt.datetime
@@ -83,7 +79,7 @@ def setup_folder(opt):
     os.makedirs(ckpt_tensorboard)  
     opt.ckpt_tensorboard = ckpt_tensorboard
 
-    # model
+    # model_directory
     model_dir = opt.ckpt+'/models/'
     if not os.path.exists(model_dir):
         os.makedirs(model_dir)  
@@ -92,14 +88,20 @@ def setup_folder(opt):
         model_datetime += "_x"
     opt.model_dir = model_datetime+".pt"
 
-    #result_pickle
-    result_dir =  opt.ckpt+'/result_pickle/'   
+    """ result """
+    result_dir =  opt.ckpt+'/result/'   
     if not os.path.exists(result_dir):
         os.makedirs(result_dir)
-    result_datetime= result_dir + date_time
-    while os.path.exists(result_datetime + '.pickle'):
-        result_datetime += "_x"
-    opt.result_pickle_dir= result_datetime+'.pickle'
+    # confusion matrix of classifcation task
+    result_CMT_datetime= result_dir + 'CMT-'+ date_time
+    while os.path.exists(result_CMT_datetime + '.pickle'):
+        result_CMT_datetime += "_x"
+    opt.result_CMT_dir= result_CMT_datetime + '.pickle'
+    # evaluation matrix of correction task
+    result_EMT_datetime= result_dir + 'EMT-'+ date_time
+    while os.path.exists(result_EMT_datetime + '.pickle'):
+        result_EMT_datetime += "_x"
+    opt.result_EMT_dir= result_EMT_datetime + '.pickle'
 
     return date_time  
 

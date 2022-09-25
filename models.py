@@ -4,7 +4,6 @@ import torch
 from torch.nn.parameter import Parameter
 import math
 
-
 class GraphConvolution(nn.Module):
     """
     Define a Graph convolutional layer with a learnable adjacency matrix
@@ -42,7 +41,6 @@ class GraphConvolution(nn.Module):
         return self.__class__.__name__ + ' (' \
                + str(self.in_features) + ' -> ' \
                + str(self.out_features) + ')'
-
 
 class GC_Block(nn.Module):
     """
@@ -87,7 +85,7 @@ class GC_Block(nn.Module):
                + str(self.in_features) + ' -> ' \
                + str(self.out_features) + ')'
 
-class GCN_corr_ori(nn.Module):
+class GCN_corr(nn.Module):
     # Separated Corrector
     def __init__(self, input_feature=25, hidden_feature=128, p_dropout=0.5, num_stage=2, node_n=57):
         """
@@ -97,7 +95,7 @@ class GCN_corr_ori(nn.Module):
         :param num_stage: number of residual blocks
         :param node_n: number of nodes in graph
         """
-        super(GCN_corr_ori, self).__init__()
+        super(GCN_corr, self).__init__()
         self.num_stage = num_stage
 
         self.gcin = GraphConvolution(input_feature, hidden_feature, node_n=node_n)

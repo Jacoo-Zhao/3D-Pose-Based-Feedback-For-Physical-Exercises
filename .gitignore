@@ -1,6 +1,9 @@
 # dataset
 data/NTU/*.pickle
 
+# lods
+Running_logs/*
+
 # Dependency directories
 
 # Python Tools for Visual Studio (PTVS)
