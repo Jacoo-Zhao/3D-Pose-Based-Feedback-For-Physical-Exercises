@@ -87,7 +87,7 @@ class GC_Block(nn.Module):
 
 class GCN_corr(nn.Module):
     # Separated Corrector
-    def __init__(self, input_feature=25, hidden_feature=128, p_dropout=0.5, num_stage=2, node_n=57):
+    def __init__(self, input_feature=25, hidden_feature=256, p_dropout=0.5, num_stage=2, node_n=57):
         """
         :param input_feature: num of input feature
         :param hidden_feature: num of hidden feature
@@ -136,7 +136,7 @@ class GCN_corr(nn.Module):
 
         return out, att
         
-class GCN_class(nn.Module):
+class GCN_class_simple(nn.Module):
     # Separated Classifier (Simple) 
     def __init__(self, input_feature=25, hidden_feature=32, p_dropout=0.5, node_n=57, classes=12):
         """
@@ -146,7 +146,7 @@ class GCN_class(nn.Module):
         :param num_stage: number of residual blocks
         :param node_n: number of nodes in graph
         """
-        super(GCN_class, self).__init__()
+        super(GCN_class_simple, self).__init__()
 
         self.gcin = GraphConvolution(input_feature, hidden_feature, node_n=node_n)
         self.gcout = GraphConvolution(hidden_feature, input_feature, node_n=node_n)
@@ -183,7 +183,7 @@ class GCN_class(nn.Module):
 
         return y
 
-class GCN_class_22Spring(nn.Module):
+class GCN_class(nn.Module):
     # Separated Classifier
     def __init__(self, input_feature=25, hidden_feature=32, p_dropout=0.5, num_block=2, dataset_name='NTU60'):
         """
@@ -192,7 +192,7 @@ class GCN_class_22Spring(nn.Module):
         :param p_dropout: drop out prob.
         :param node_n: number of nodes in graph
         """
-        super(GCN_class_22Spring, self).__init__()
+        super(GCN_class, self).__init__()
         if dataset_name == 'NTU60':
             node_n = 75
             classes = 60
@@ -266,7 +266,7 @@ class GCN_class_22Spring(nn.Module):
 
         return y
 
-class GCN_corr_class_v1_22Spring(nn.Module):
+class GCN_corr_class(nn.Module):
     # combiend_wo_feedback
     def __init__(self, input_feature=25, hidden_feature=128, p_dropout=0.5, \
                  num_stage=2, node_n=57, classes=12):
@@ -277,7 +277,7 @@ class GCN_corr_class_v1_22Spring(nn.Module):
                 :param num_stage: number of residual blocks
                 :param node_n: number of nodes in graph
          """
-        super(GCN_corr_class_v1_22Spring, self).__init__()
+        super(GCN_corr_class, self).__init__()
         self.num_stage = num_stage
         self.gcin = GraphConvolution(input_feature, hidden_feature, node_n=node_n)
 
@@ -354,7 +354,7 @@ class GCN_corr_class_v1_22Spring(nn.Module):
         return out, att, y_class
 
 
-class GCN_corr_class_v4_22Spring(nn.Module):
+class GCN_corr_class_ours(nn.Module):
     # ours / combined_wo_smoothness
     def __init__(self, input_feature=25, hidden_feature=128, p_dropout=0.5, \
                  num_stage=2, node_n=57, classes=12):
@@ -365,7 +365,7 @@ class GCN_corr_class_v4_22Spring(nn.Module):
             :param num_stage: number of residual blocks
             :param node_n: number of nodes in graph
         """
-        super(GCN_corr_class_v4_22Spring, self).__init__()
+        super(GCN_corr_class_ours, self).__init__()
         self.classes=classes
         self.num_stage = num_stage
         self.gcin = GraphConvolution(input_feature, hidden_feature, node_n=node_n)

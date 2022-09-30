@@ -246,7 +246,7 @@ def train_corr_class_v4(train_loader, model, curriculum_learning_rate, optimizer
         # update the training loss
         tr_l.update(loss.cpu().data.numpy() * batch_size, batch_size)
 
-    return tr_l.avg, 100 * correct / total
+    return tr_l.avg, 100 * correct / total, loss_corr
 
 def train_corr(train_loader, model, optimizer, fact=None, is_cuda=False):
     tr_l = AccumLoss()

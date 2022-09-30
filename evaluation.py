@@ -1,20 +1,15 @@
-import pickle, pdb, datetime, os
+import pickle, os
+import torch
 import numpy as np
 import pandas as pd
-import torch
+
 from torch.utils.data import DataLoader
 from models import *
+from utils import display_poses, get_labels, test_class_v4, idct_2d, test_corr_v4, dct_2d
 
 # torch.cuda.set_device(2)
-print('GPU Index: {}'.format(torch.cuda.current_device()))
+# print('GPU Index: {}'.format(torch.cuda.current_device()))
 
-
-from dataset import HV3D
-# from models import GCN_corr, GCN_class, GCN_class_22Spring
-from models import *
-from opt import Options
-from utils import display_poses, get_labels, test_class_v4, idct_2d, test_corr_v4, dct_2d
-# from utils import *
 
 def get_full_label(raw_labels):
     map_label = {1: 'Correct', 2: 'Feets too wide', 3: 'Knees inward', 4: 'Not low enough', 5: 'Front bended',
@@ -24,39 +19,30 @@ def get_full_label(raw_labels):
     return acts, full_labels
 
 
-def main_eval(time, savepath, model_combined, options, separated=False, model_corr_path='', model_class_path='', model_version='', model_combined_path=''):
-    opt = options
-    is_cuda = torch.cuda.is_available()
-    use_random_one_hot = True
+def main_eval(time, opt, data_test, separated=False, model_version=''):
 
-    # Load data
-    try:
-        with open('Data/tmp_noVal.pickle', "rb") as f:
-            data = pickle.load(f)
-        data_test = data['test']
-        print('Load preserved data.')
-    except FileNotFoundError:
-        sets = [[0, 1, 2], [], [3]]
-        data_train = HV3D(opt.gt_dir, sets=sets, split=0, is_cuda=is_cuda)
-        data_test = HV3D(opt.gt_dir, sets=sets, split=2, is_cuda=is_cuda)
-        with open('Data/tmp_noVal.pickle', 'wb') as f:
-            pickle.dump({'train': data_train, 'test': data_test}, f)
+    is_cuda = torch.cuda.is_available()
+    use_random_one_hot = False
 
     test_loader = DataLoader(dataset=data_test, batch_size=len(data_test))
-
+    
+    savepath = opt.ckpt + '/result/'
 
     # Models
     if separated:
         """For separated model"""
+        model_corr_path = opt.model_dir
+        model_class_path='pretrained_weights/classifer_for_eval.pt'
+
         # Create models
-        model_corr = GCN_corr()
-        model_class = GCN_corr_class_v4_22Spring(hidden_feature=opt.hidden, p_dropout=opt.dropout, classes=12).cuda()
+        model_corr = GCN_corr(hidden_feature=opt.hidden)
+        model_class = GCN_corr_class_ours(hidden_feature=256, p_dropout=opt.dropout, classes=12).cuda()   #  best classifier 
+        
         # Load parameters
         model_corr.load_state_dict(torch.load(model_corr_path))
         model_class.load_state_dict(torch.load(model_class_path))
 
-        model_id = '#'+model_corr_path[-14:-3].replace('-', '')+'.csv'
-        savepath +=  model_id
+        model_id = model_corr_path[-19:-3] if model_corr_path[0] != 'p' else 'pretrained'
         if is_cuda:
             model_class.cuda()
             model_class.eval()
@@ -64,10 +50,14 @@ def main_eval(time, savepath, model_combined, options, separated=False, model_co
             model_corr.eval()
     else: 
         """For combined model"""
-        model = model_combined
-        model.load_state_dict(torch.load(model_combined_path))
-        model_id = '#'+model_combined_path[-14:-3].replace('-', '')
-        savepath +=  model_id
+        model = GCN_corr_class(hidden_feature=opt.hidden) if model_version == 'CwoF' else GCN_corr_class_ours(hidden_feature=opt.hidden)
+        model_path = opt.model_dir
+        # import pdb; pdb.set_trace()
+        # model.load_state_dict(torch.load(model_path))
+        model.load_state_dict(torch.load(opt.model_dir))
+
+        model_id = model_path[-19:-3] if model_path[0] != 'p' else 'pretrained'
+
         if is_cuda:
             model.cuda()
             model.eval()
@@ -86,17 +76,15 @@ def main_eval(time, savepath, model_combined, options, separated=False, model_co
                 deltas, att = model_corr(inputs)
                 _, pred_out = torch.max(model_class(inputs+deltas, labels, False)[2].data, 1)
             else:
-                if model_version=='CCF22S':
-                    # Our framework
+                if model_version=='Ours':
                     deltas, _, y_pred = model(inputs, labels, Use_label=False,random_one_hot=use_random_one_hot)
                     _, pred_in = torch.max(y_pred.data, 1)  
                    
                     outputs = inputs+deltas
                     _, pred_out = torch.max(model(outputs, labels, Use_label=False, random_one_hot=use_random_one_hot)[2].data, 1)
-                    _, _, _, cmt = test_class_v4(test_loader, model, is_cuda=is_cuda, level=1, Use_label=False)
-                    pd.DataFrame(cmt.numpy()).to_csv(savepath+'CMT.csv') # Save Confusion Matrix of Classification Branch
-                    # #plotting
-                    whether_plot = input('Do you wanna plot the results?(y/n)')
+                    
+                    ''' Visulization '''
+                    whether_plot = input('Do you wanna plot the results?\n(y/n)')
                     if whether_plot == 'y':
                         inputs_raw = [test_loader.dataset.inputs_raw[int(i)] for i in batch_id]
                         targets_raw = [test_loader.dataset.targets[int(i)] for i in batch_id]
@@ -124,12 +112,12 @@ def main_eval(time, savepath, model_combined, options, separated=False, model_co
                                     display_poses([org_raw[t].reshape([3,19])], save_loc=fig_loc, custom_name="outputs_", time=t, custom_title=None, legend_=None, color_list = ["red"])
                                     display_poses([org_raw[t].reshape([3,19]),outputs_raw[t].reshape([3,19])], save_loc=fig_loc, custom_name="inputs_", time=t, custom_title=None, legend_=None, color_list = ["red", "green"])
                         # display_poses([targ_raw[t].reshape([3,19])], save_loc=fig_loc, custom_name="targets_", time=t, custom_title=None, legend_=None, color_list = ["blue"])       
-                    # Fetching Method LOSS Computing
-                    whether_dtw_loss = input('Do you wanna compute DTW_loss? \n Warning: Only choose \'y\' when usding Dataset_fetching Method!(y/n)')
+                    
+                    ''' Fetching Method LOSS Computation '''
+                    whether_dtw_loss = input('Do you wanna compute DTW_loss?\n(y/n)')
                     if whether_dtw_loss == 'y':                    
                         _, _, dtw_loss = test_corr_v4(test_loader, model, is_cuda=is_cuda)
-                        pd.DataFrame(dtw_loss).to_csv('Results-22Spring/Combined_v2/Evaluation/'+time+'dtw_loss_.csv')
-                        pdb.set_trace()
+                        pd.DataFrame(dtw_loss).to_csv('Results/Combined_v2/Evaluation/'+time+'dtw_loss_.csv')
                         with open('Data/DTW_Method.pickle', "rb") as f:
                             data = pickle.load(f)
                         targets_raw = data['targets']
@@ -141,14 +129,17 @@ def main_eval(time, savepath, model_combined, options, separated=False, model_co
                         _, pred_in = torch.max(model(inputs, labels, False)[2].data, 1) 
                         # deltas, _, _, = model(inputs, labels, False)
                         _, pred_out = torch.max(model(targets, labels, False)[2].data, 1)
+                
                 else:
-                    _, pred_in = torch.max(model(inputs)[2].data, 1)
-                    deltas, _, _, = model(inputs)
-                    _, pred_out = torch.max(model(inputs+deltas)[2].data, 1)
+                    deltas, _, y_pred = model(inputs)
+                    _, pred_in = torch.max(y_pred.data, 1)  
+                    
+                    outputs = inputs+deltas
+                    _, pred_out = torch.max(model(outputs)[2].data, 1)
 
     summary = np.vstack((labels.cpu().numpy(), pred_in.cpu().numpy(), pred_out.cpu().numpy())).T
     summary = pd.DataFrame(summary, columns=['label', 'original', 'corrected'])
-    summary.to_csv(savepath+'EMT.csv', mode='a', float_format='%6f')
+    summary.to_csv(savepath+'EMT-'+ model_id+'.csv', mode='a', float_format='%6f')
 
     count = 0
     total = 0
@@ -163,7 +154,7 @@ def main_eval(time, savepath, model_combined, options, separated=False, model_co
         tmp = summary[summary['label'] == k]
 
         if (len(tmp)==0) :
-            print('Detects 0 as a divisor, while k={} v={}'.format(k,v))
+            # print('Detects 0 as a divisor, while k={} v={}'.format(k,v))
             results[v[0]][v[1]]['original']='nan'
             results[v[0]][v[1]]['corrected']='nan'
             continue
@@ -176,26 +167,26 @@ def main_eval(time, savepath, model_combined, options, separated=False, model_co
     res = count / total * 100
 
     loss_matrix = pd.DataFrame(results)
-    loss_matrix.to_csv(savepath+'EMT.csv', mode='a', float_format='%6f')
+    loss_matrix.to_csv(savepath+'EMT-'+ model_id+'.csv', mode='a', float_format='%6f')
 
-if __name__ == "__main__":
-    opt = Options().parse()
+# if __name__ == "__main__":
+#     opt = Options().parse()
 
-    time = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
-    savepath = opt.ckpt+'/Evaluation/'
+#     time = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
+#     savepath = opt.ckpt+'/Evaluation/'
 
-    if not os.path.exists(savepath):
-        os.makedirs(savepath)
-    savepath += opt.datetime
-    while os.path.exists(savepath):
-        savepath += "_x"
+#     if not os.path.exists(savepath):
+#         os.makedirs(savepath)
+#     savepath += opt.datetime
+#     while os.path.exists(savepath):
+#         savepath += "_x"
 
-    combined_model = GCN_corr_class_v4_22Spring(hidden_feature=opt.hidden, p_dropout=opt.dropout, classes=12).cuda()
-    opt.model_dir = 'Results-22Spring/Combined_v2/models/2022-07-06-21-27.pt'
+#     combined_model = GCN_corr_class_ours(hidden_feature=opt.hidden, p_dropout=opt.dropout, classes=12).cuda()
+#     opt.model_dir = 'Results-22Spring/Combined_v2/models/2022-07-06-21-27.pt'
 
-    main_eval(time, savepath,  model_version='CCF22S', model_combined= combined_model, model_combined_path=opt.model_dir, options=opt)
+#     main_eval(time, savepath,  model_version='CCF22S', model_combined= combined_model, model_combined_path=opt.model_dir, options=opt)
 
-    print('Evaluation done')
+#     print('Evaluation done')
     
 
 

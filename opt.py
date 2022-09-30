@@ -14,18 +14,17 @@ class Options:
         self.parser.add_argument('--datetime', type=str, default="", help='datatime now')
         self.parser.add_argument('--ckpt', type=str, default='Combined_v1', help='path to checkpoint', required=True)
         self.parser.add_argument('--note', type=str, default="", help='any other notes')
+       
         self.parser.add_argument('--result_CMT_dir', type=str, default='', help='path to save classification results')
+        self.parser.add_argument('--result_Preds_dir', type=str, default='', help='path to save evaluation results')
         self.parser.add_argument('--result_EMT_dir', type=str, default='', help='path to save evaluation results')
-        self.parser.add_argument('--model', type=str, default='Combined_v2', help='model choose')
-
-        self.parser.add_argument("--combined", "-c", default=True, help='Choose the combined model')
+        self.parser.add_argument('--model_dir', '-ccmd', type=str, default='Running_logs/model.pt',
+                                 help='path to saved file')
+        # self.parser.add_argument('--model', type=str, default='Combined_v2', help='model choose')
+        # self.parser.add_argument("--combined", "-c", default=True, help='Choose the combined model')
         self.parser.add_argument('--raw_data_dir', type=str, default='data/EC3D/data_3D.pickle', help='path to source data of EC3D')
         self.parser.add_argument('--NTU_data_path', type=str, default='data/NTU/tu_uniformed.pickle', help='path to NTU data')
         self.parser.add_argument('--EC3D_data_path', type=str, default='data/EC3D/tmp_wo_val.pickle', help='path to dataset')
-        
-        self.parser.add_argument('--model_dir', '-ccmd', type=str, default='Running_logs/model.pt',
-                                 help='path to saved file')
-       
 
         # ===============================================================
         #                     Model & Running options
@@ -92,16 +91,24 @@ def setup_folder(opt):
     result_dir =  opt.ckpt+'/result/'   
     if not os.path.exists(result_dir):
         os.makedirs(result_dir)
+
     # confusion matrix of classifcation task
     result_CMT_datetime= result_dir + 'CMT-'+ date_time
     while os.path.exists(result_CMT_datetime + '.pickle'):
         result_CMT_datetime += "_x"
     opt.result_CMT_dir= result_CMT_datetime + '.pickle'
+
+    # results of correction task
+    result_Preds_datetime= result_dir + 'Preds-'+ date_time
+    while os.path.exists(result_Preds_datetime + '.pickle'):
+        result_Preds_datetime += "_x"
+    opt.result_Preds_dir= result_Preds_datetime + '.pickle'
+    
     # evaluation matrix of correction task
     result_EMT_datetime= result_dir + 'EMT-'+ date_time
-    while os.path.exists(result_EMT_datetime + '.pickle'):
+    while os.path.exists(result_EMT_datetime):
         result_EMT_datetime += "_x"
-    opt.result_EMT_dir= result_EMT_datetime + '.pickle'
+    opt.result_EMT_dir= result_EMT_datetime 
 
     return date_time  
 
