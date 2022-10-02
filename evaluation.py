@@ -50,7 +50,7 @@ def main_eval(time, opt, data_test, separated=False, model_version=''):
             model_corr.eval()
     else: 
         """For combined model"""
-        model = GCN_corr_class(hidden_feature=opt.hidden) if model_version == 'CwoF' else GCN_corr_class_ours(hidden_feature=opt.hidden)
+        model = GCN_corr_class(hidden_feature=opt.hidden) if model_version == 'Combined_wo_Feedback' else GCN_corr_class_ours(hidden_feature=opt.hidden)
         model_path = opt.model_dir
         # import pdb; pdb.set_trace()
         # model.load_state_dict(torch.load(model_path))
@@ -84,7 +84,8 @@ def main_eval(time, opt, data_test, separated=False, model_version=''):
                     _, pred_out = torch.max(model(outputs, labels, Use_label=False, random_one_hot=use_random_one_hot)[2].data, 1)
                     
                     ''' Visulization '''
-                    whether_plot = input('Do you wanna plot the results?\n(y/n)')
+                    # whether_plot = input('Do you wanna plot the results?\n(y/n)')
+                    whether_plot = 'n'
                     if whether_plot == 'y':
                         inputs_raw = [test_loader.dataset.inputs_raw[int(i)] for i in batch_id]
                         targets_raw = [test_loader.dataset.targets[int(i)] for i in batch_id]
@@ -114,7 +115,8 @@ def main_eval(time, opt, data_test, separated=False, model_version=''):
                         # display_poses([targ_raw[t].reshape([3,19])], save_loc=fig_loc, custom_name="targets_", time=t, custom_title=None, legend_=None, color_list = ["blue"])       
                     
                     ''' Fetching Method LOSS Computation '''
-                    whether_dtw_loss = input('Do you wanna compute DTW_loss?\n(y/n)')
+                    # whether_dtw_loss = input('Do you wanna compute DTW_loss?\n(y/n)')
+                    whether_dtw_loss = 'n'
                     if whether_dtw_loss == 'y':                    
                         _, _, dtw_loss = test_corr_v4(test_loader, model, is_cuda=is_cuda)
                         pd.DataFrame(dtw_loss).to_csv('Results/Combined_v2/Evaluation/'+time+'dtw_loss_.csv')

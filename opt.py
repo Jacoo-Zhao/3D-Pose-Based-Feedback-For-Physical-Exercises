@@ -12,7 +12,7 @@ class Options:
         #                     General options
         # ===============================================================
         self.parser.add_argument('--datetime', type=str, default="", help='datatime now')
-        self.parser.add_argument('--ckpt', type=str, default='Combined_v1', help='path to checkpoint', required=True)
+        self.parser.add_argument('--ckpt', type=str, default='Ckpt', help='path to checkpoint', required=True)
         self.parser.add_argument('--note', type=str, default="", help='any other notes')
        
         self.parser.add_argument('--result_CMT_dir', type=str, default='', help='path to save classification results')
@@ -38,9 +38,7 @@ class Options:
         self.parser.add_argument('--lr', type=float, default=0.01, help='Learning rate')
         self.parser.add_argument('--lr_decay', type=int, default=5, help='every lr_decay epoch do lr decay')
         self.parser.add_argument('--lr_gamma', type=float, default=0.9, help='decay coefficient')
-        self.parser.add_argument('--epoch_corr_class', '-ecc', type=int, default=50, help='Number of epochs for correction and classification')
-        self.parser.add_argument('--epoch_corr', type=int, default=50, help='Number of epochs for correction')
-        self.parser.add_argument('--epoch_class', type=int, default=200, help='Number of epochs for classification')
+        self.parser.add_argument('--epoch', '-ecc', type=int, default=50, help='Number of epochs')
         self.parser.add_argument('--beta', type=float, default=1)
         self.parser.add_argument('--weight_decay', type=float, default=0, help='weight decay')
         
@@ -58,7 +56,7 @@ class Options:
         if not os.path.isdir(ckpt):
             os.makedirs(ckpt)
         self.opt.ckpt = ckpt  # i.e. Running_logs/ckpt
-        self._print()
+        
         return self.opt
 
 def setup_folder(opt):
@@ -68,7 +66,6 @@ def setup_folder(opt):
         opt.model_dir = Running_logs/opt.ckpt/models/date_time 
         opt.result_pickle_dir = Running_logs/opt.ckpt/result/date_time 
     """
-
     date_time= opt.datetime
 
     # tensorboard

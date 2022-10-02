@@ -379,7 +379,7 @@ def test_corr_v1(test_loader, model, fact=None, is_cuda=False):
         preds['att'] = preds['att'] + [att[j].detach().cpu().numpy() for j in range(att.shape[0])]
         test_l.update(loss.cpu().data.numpy(), batch_size)
 
-    return test_l.avg, preds
+    return test_l.avg, preds, 0
 
 def test_corr_v4(test_loader, model, fact=None, is_cuda=False, Use_label=False):
     test_l = AccumLoss()
