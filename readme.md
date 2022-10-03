@@ -63,9 +63,16 @@ Install the requirements using `virtualenv` or `conda`:
     # conda 
     source scripts/install_conda.sh
 
- #### Training & Testing
+ #### After environment configuration done:
 
-*Coming soon!*
+Enable tensorboard (logdir is your local folder):
+
+	tensorboard --logdir='Running_logs' --port=8001 --bind_all 
+Change to root diretory:
+
+	python main.py --ckpt='check_point' --hidden=256 --epoch=200
+
+Then select the model version, wait for the data to be loaded/generated and finally choose whether to train the model or use the pre-trained weights, the results will be automatically saved to the checkpoint folder.
 
 ### Citing
 This repository holds the code for the following paper:
