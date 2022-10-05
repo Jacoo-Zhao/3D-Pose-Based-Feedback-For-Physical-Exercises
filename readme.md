@@ -1,6 +1,6 @@
 # 3D-Pose-Based-Feedback-For-Physical-Exercises
 
-📄 [Paper](https://arxiv.org/abs/2208.03257) &nbsp;&nbsp; 🔗 [Website](https://senakicir.github.io/projects/exercise_feedback) &nbsp;&nbsp; ▶︎ [Video](https://www.youtube.com/watch?v=W3kyyeHe0SI&feature=youtu.be) 📊 [Data](https://drive.google.com/drive/folders/1Y00Qw6QyAnhrxUWelyFcTm2a7tnZB93y?usp=sharing)
+📄 [Paper](https://arxiv.org/abs/2208.03257) &nbsp;&nbsp; 🔗 [Website](https://senakicir.github.io/projects/exercise_feedback) &nbsp;&nbsp; ▶︎ [Video](https://www.youtube.com/watch?v=W3kyyeHe0SI&feature=youtu.be)  &nbsp;&nbsp;  📊 [Data](https://drive.google.com/drive/folders/1Y00Qw6QyAnhrxUWelyFcTm2a7tnZB93y?usp=sharing)
 
 ### Introduction
 Unsupervised self-rehabilitation exercises and physical training can cause serious injuries if performed incorrectly. We introduce a learning-based framework that identifies the mistakes made by a user and proposes corrective measures for easier and safer individual training. Our framework does not rely on hard-coded, heuristic rules. Instead, it learns them from data, which facilitates its adaptation to specific user needs. To this end, we use a Graph Convolutional Network (GCN) architecture acting on the user's pose sequence to model the relationship between the the body joints trajectories. To evaluate our approach, we introduce a dataset with 3 different physical exercises. Our approach yields 90.9\% mistake identification accuracy and successfully corrects 94.2\% of the mistakes.
@@ -24,7 +24,7 @@ Examples of acquired images for each action, subject and camera and 3D ground tr
   <img src="images/Dataset2.png" width="49%" />
 </p>
 
-You can access the Exercise Correction in 3D (EC3D) dataset [here!](https://drive.google.com/drive/folders/1Y00Qw6QyAnhrxUWelyFcTm2a7tnZB93y?usp=sharing). 
+You can access the Exercise Correction in 3D (EC3D) dataset [here](https://drive.google.com/drive/folders/1Y00Qw6QyAnhrxUWelyFcTm2a7tnZB93y?usp=sharing)! 
 
 Description of the data:
 
@@ -86,6 +86,6 @@ If you find our work useful, please cite it as:
 ```
 ### Acknowledgement
 
-1.Some of our data process code for[ NTU RGB+D](https://github.com/shahroudy/NTURGB-D) was adapted/ported from [SGN](https://github.com/microsoft/SGN) by [Microsoft](https://github.com/microsoft). 
+1. Some of our data process code for[ NTU RGB+D](https://github.com/shahroudy/NTURGB-D) was adapted/ported from [SGN](https://github.com/microsoft/SGN) by [Microsoft](https://github.com/microsoft). 
 
-2.Our theoretical framework draws on the work in [Learning Trajectory Dependencies for Human Motion Prediction](https://arxiv.org/abs/1908.05436) by [Wei Mao](https://github.com/wei-mao-2019/LearnTrajDep). 
+2. Our theoretical framework draws on the work in [Learning Trajectory Dependencies for Human Motion Prediction](https://arxiv.org/abs/1908.05436) by [Wei Mao](https://github.com/wei-mao-2019/LearnTrajDep). 
