@@ -1,12 +1,13 @@
 # 3D-Pose-Based-Feedback-For-Physical-Exercises
 
-📄 [Paper](https://arxiv.org/abs/2208.03257) &nbsp;&nbsp; 🔗 [Website](https://senakicir.github.io/projects/exercise_feedback) &nbsp;&nbsp; ▶︎ [Video](https://www.youtube.com/watch?v=W3kyyeHe0SI&feature=youtu.be)
+📄 [Paper](https://arxiv.org/abs/2208.03257) &nbsp;&nbsp; 🔗 [Website](https://senakicir.github.io/projects/exercise_feedback) &nbsp;&nbsp; ▶︎ [Video](https://www.youtube.com/watch?v=W3kyyeHe0SI&feature=youtu.be) 📊 [Data](https://drive.google.com/drive/folders/1Y00Qw6QyAnhrxUWelyFcTm2a7tnZB93y?usp=sharing)
+
 ### Introduction
 Unsupervised self-rehabilitation exercises and physical training can cause serious injuries if performed incorrectly. We introduce a learning-based framework that identifies the mistakes made by a user and proposes corrective measures for easier and safer individual training. Our framework does not rely on hard-coded, heuristic rules. Instead, it learns them from data, which facilitates its adaptation to specific user needs. To this end, we use a Graph Convolutional Network (GCN) architecture acting on the user's pose sequence to model the relationship between the the body joints trajectories. To evaluate our approach, we introduce a dataset with 3 different physical exercises. Our approach yields 90.9\% mistake identification accuracy and successfully corrects 94.2\% of the mistakes.
 
 ![](https://lh5.googleusercontent.com/q0b0XdYewFq0hW48HzMSe0drh7QMqCqSL3H-qGMjt_XkeARnYgAVpki2d5d7y-5myN0=w2400)
 
-Figure1: Gif of Our results. The red poses correspond to the exercises performed incorrectly while the   green poses correspond to our corrections. 
+Figure1: Gif of our results. The red poses correspond to the exercises performed incorrectly while the green poses correspond to our corrections. 
 
 
 ### Framework
@@ -23,21 +24,16 @@ Examples of acquired images for each action, subject and camera and 3D ground tr
   <img src="images/Dataset2.png" width="49%" />
 </p>
 
-You can access all the data used  [coming soon!](https://github.com/Jacoo-Zhao/3D-Pose-Based-Feedback-For-Physical-Exercises). 
+You can access the Exercise Correction in 3D (EC3D) dataset [here!](https://drive.google.com/drive/folders/1Y00Qw6QyAnhrxUWelyFcTm2a7tnZB93y?usp=sharing). 
 
 Description of the data:
 
 1. **data_3D.pickle** is the data source used in this paper. It contains the labels and 3D coordinates of all action sequences, while the coordinates have a size of (29789, 3, 25) where 29789 is the number of extracted frames for all action sequences, 3 is the x,y,z coordinates and 25 is the 25 skeletal nodes.
 
-2. **data.pickle** basically contains all the raw  data, consisting of the camera parameters and the 2D and 3D coordinates of each skeleton node for each frame. However, due to the large size of the frames extracted from the video (182GB*4), it’s  hard to provide these image frames. If you would like to obtain images, please see items 3 and 4.
+2. **data.pickle** contains all the raw  data, including the camera parameters and the 2D and 3D coordinates of each skeleton node for each frame.
 
-3. **video.mp4** is the original four videos obtained by the four cameras, if you want to get the image frames, please refer  to  video_labelling.csv to intercept the video, we recommend using [ffmpeg](https://ffmpeg.org/) to extract the video frames one by one.
+- If you wish to reproduce the results of this project, you may directly use **data_3D.pickle**.
 
-4. **video_labelling.csv** is used to provide labels to the original video, they contain manually labelled start and end frames belonging to the same subject and action label.
-
-- If you wish to reproduce the results of this project, please use **data_3D.pickle**.
-
-- For processing and development relative to the raw data, please refer to **video.mp4** and **video_labelling.csv**.
 
 ### Dependencies
 -   Cuda==10.1.168
@@ -63,7 +59,7 @@ Install the requirements using `virtualenv` or `conda`:
     # conda 
     source scripts/install_conda.sh
 
- #### After environment configuration done:
+ #### After the environment configuration is done:
 
 Enable tensorboard (logdir is your local folder):
 
